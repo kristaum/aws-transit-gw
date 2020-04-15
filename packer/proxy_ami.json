@@ -1,0 +1,76 @@
+{
+  "variables": {
+    "aminame": "{{env `AMINAME`}}",
+    "vpcId": "{{env `VPC_ID`}}",
+    "subnetId": "{{env `SUBNET_ID`}}",
+    "region": "{{env `REGION`}}"
+  },
+  "builders": [
+    {
+      "ami_name": "{{user `aminame`}} {{isotime \"2006-01-02 150405\"}}",
+      "ami_description": "A custom AMI for transparent proxy",
+      "ami_users": "",
+      "ami_regions": "{{user `region`}}",
+      "source_ami": "ami-0323c3dd2da7fb37d",
+      "type": "amazon-ebs",
+      "region": "{{user `region`}}",
+      "ami_virtualization_type": "hvm",
+      "instance_type": "t2.medium",
+      "ssh_username": "ec2-user",
+      "vpc_id": "{{user `vpcId`}}",
+      "subnet_id": "{{user `subnetId`}}",
+      "associate_public_ip_address": true,
+      "ssh_interface": "public_ip",
+      "ssh_pty" : "true",
+      "iam_instance_profile": "",
+      "run_tags": {
+          "Name": "cloud-proxy-ami-builder",
+          "Department": "Infrastructure",
+          "Team": "Cloud",
+          "TeamEmail": "christopher.kristao@gmail.com",
+          "Compliance": "None",
+          "ApplicationGroup": "cloud",
+          "Application": "cloud-proxy-ami-builder",
+          "SkipSnapshot": "yes"
+      },
+      "tags": {
+        "Name": "{{user `aminame`}}",
+        "Team": "Cloud",
+        "Environment": "packer",
+        "EnvironmentGroup": "devops"
+      }
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command" : "echo 'ec2-user' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "inline": ["chown -R ec2-user:ec2-user /var/lib/cloud/scripts/per-instance"]
+    },
+    {
+      "type": "file",
+      "source": "scripts/0_route_squid.sh",
+      "destination": "/var/lib/cloud/scripts/per-instance/0_route_squid.sh"
+    },
+    {
+      "type": "shell",
+      "execute_command" : "echo 'ec2-user' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "inline": ["chown -R root:root /var/lib/cloud/scripts/per-instance"]
+    },
+    {
+      "type": "shell",
+      "execute_command" : "echo 'ec2-user' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "script": "scripts/squid_build.sh"
+    },
+    {
+      "type": "shell",
+      "execute_command" : "echo 'ec2-user' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "inline": ["chown -R ec2-user:ec2-user /etc/squid"]
+    },
+    {
+      "type": "file",
+      "source": "files/squid.conf",
+      "destination": "/etc/squid/squid.conf"
+    }
+  ]
+}
