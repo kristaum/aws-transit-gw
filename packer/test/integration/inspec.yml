@@ -1,0 +1,8 @@
+name: integration
+title: InSpec to check AMI is good after baked
+maintainer: Cloud-NAA
+copyright: Fanatics
+copyright_email: CloudInfrastructure@fanatics.com
+version: 1.0.0
+supports:
+  - os-family: linux

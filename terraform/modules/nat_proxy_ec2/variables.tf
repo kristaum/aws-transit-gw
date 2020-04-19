@@ -4,32 +4,8 @@ variable "instance_type" {
   default       = "t2.micro"
 }
 
-variable "ami_id" {
-  description   = ""
-  type          = string
-  default       = "ami-04ea0124c0fcc0cb4"
-}
-
-variable "sg_eth0_egress" {
-  description   = "Security group for eth0"
-  type          = string
-  default       = ""
-}
-
-variable "subnet_priv_1" {
-  description   = ""
-  type          = string
-  default       = ""
-}
-
-variable "subnet_priv_2" {
-  description   = ""
-  type          = string
-  default       = ""
-}
-
-variable "subnet_priv_3" {
-  description   = ""
+variable "keyname" {
+  description   = "Key that will be used to login to ec2 intances"
   type          = string
   default       = ""
 }

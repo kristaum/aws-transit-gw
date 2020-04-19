@@ -1,6 +1,6 @@
 {
   "variables": {
-    "aminame": "{{env `AMINAME`}}",
+    "aminame": "ami-transp-proxy",
     "vpcId": "{{env `VPC_ID`}}",
     "subnetId": "{{env `SUBNET_ID`}}",
     "region": "{{env `REGION`}}"
@@ -24,18 +24,18 @@
       "ssh_pty" : "true",
       "iam_instance_profile": "",
       "run_tags": {
-          "Name": "cloud-proxy-ami-builder",
+          "Name": "proxy-ami-builder",
           "Department": "Infrastructure",
-          "Team": "Cloud",
+          "Team": "Cloud-AWS",
           "TeamEmail": "christopher.kristao@gmail.com",
           "Compliance": "None",
-          "ApplicationGroup": "cloud",
-          "Application": "cloud-proxy-ami-builder",
+          "ApplicationGroup": "cloud-aws",
+          "Application": "proxy-ami-builder",
           "SkipSnapshot": "yes"
       },
       "tags": {
         "Name": "{{user `aminame`}}",
-        "Team": "Cloud",
+        "Team": "Cloud-AWS",
         "Environment": "packer",
         "EnvironmentGroup": "devops"
       }
@@ -71,6 +71,31 @@
       "type": "file",
       "source": "files/squid.conf",
       "destination": "/etc/squid/squid.conf"
+    },
+    {
+      "type": "shell",
+      "execute_command" : "echo 'ec2-user' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "inline": ["reboot"],
+      "expect_disconnect": true
+    },
+    {
+      "type": "shell",
+      "execute_command" : "echo 'ec2-user' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "inline": ["yum install -y https://packages.chef.io/files/stable/inspec/4.18.104/el/7/inspec-4.18.104-1.el7.x86_64.rpm"],
+      "pause_before": "60s"
+    },
+    {
+      "type": "file",
+      "source": "test/integration",
+      "destination": "/home/ec2-user"
+    },
+    {
+      "type": "shell",
+      "execute_command" : "echo 'ec2-user' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "inline": [
+        "inspec --chef-license=accept",
+        "inspec exec /home/ec2-user/integration"
+      ]
     }
   ]
 }
